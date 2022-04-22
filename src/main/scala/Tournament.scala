@@ -2,10 +2,10 @@ import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
 
 class Tournament(val nbrEntrants: Int):
-    var currentRound: Int = 1
-    val finalRound: Int = (Math.log10(nbrEntrants) / Math.log10(2.0) - 2).toInt
+    private var currentRound: Int = 1
+    private val finalRound: Int = (Math.log10(nbrEntrants) / Math.log10(2.0)).toInt
 
-    val players: Vector[Player] =
+    private val players: Vector[Player] =
         (for i <- 0 until nbrEntrants yield
             val name = s"${(65+(i / 10)).toChar}${i % 10}"
             val ability = (Random.nextGaussian()*50).toInt.abs
@@ -13,28 +13,26 @@ class Tournament(val nbrEntrants: Int):
             Player(name, ability)
         ).toVector
 
-    val matches: ArrayBuffer[Match] =
-        val temp = ArrayBuffer[Match]()
-
-        for i <- 0 until nbrEntrants / 2 do
-            temp += Match(i, players(i), players(nbrEntrants - (1 + i)))
-        temp
+    private val firstRound = Round(0)
+    for i <- 0 until nbrEntrants / 2 do
+        firstRound.addMatch(i, players(i), players(nbrEntrants - (i + 1)))
     
-    def simulateRound(start: Int, finish: Int): Unit =
-        for i <- start to finish by 2 do
-            val nextMatch = Match(matches.length, matches(i).winner, matches(i + 1).winner)
-            println(nextMatch)
-            matches += nextMatch
-        println()
+    private var rounds = Array.ofDim[Round](finalRound + 1)
+    rounds(0) = firstRound
+    
+    private def simulateRound(): Unit =
+        rounds(currentRound) = Round(currentRound)
+        val previousMatches = rounds(currentRound - 1).viewMatches
+        val nbrMatches = (Math.pow(2, finalRound - currentRound)).toInt
 
+        for i <- 0 until (previousMatches.length - 1) by 2 do
+            rounds(currentRound).addMatch(i, previousMatches(i).winner, previousMatches(i + 1).winner)
+
+        rounds(currentRound).printMatches()
         currentRound += 1
     
     def simulateTournament(): Unit = 
-        var start: Int = 0
-        var finish: Int = (nbrEntrants / 2) - 1
-        for i <- 0 to finalRound do
-            simulateRound(2*start, finish)
-            val nbrRounds = (Math.pow(2, finalRound - i)).toInt
-            start += nbrRounds
-            finish += nbrRounds
+        rounds(0).printMatches()
+        for i <- 0 until finalRound do
+            simulateRound()
         
