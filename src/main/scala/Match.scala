@@ -1,4 +1,4 @@
-case class Match(nbr: Int, player1: Player, player2: Player):
+final case class Match(nbr: Int, player1: Player, player2: Player):
     val winner: Player =
         if player1.ability == player2.ability then
             if Math.random >= 0.5 then player1

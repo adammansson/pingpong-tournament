@@ -1,4 +1,4 @@
-case class Round(nbr: Int):
+final case class Round(nbr: Int):
     private var matches = Vector[Match]()
 
     def getMatches: Vector[Match] = matches
