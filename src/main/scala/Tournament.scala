@@ -11,24 +11,26 @@ class Tournament(val nbrEntrants: Int):
             val ability = (Random.nextGaussian()*50).toInt.abs
 
             Player(name, ability)
-        ).toVector
+        ).sortBy(player => player.ability).reverse.toVector
 
     private val firstRound = Round(0)
     for i <- 0 until nbrEntrants / 2 do
-        firstRound.addMatch(i, players(i), players(nbrEntrants - (i + 1)))
+        val m = Match(i, players(i), players(nbrEntrants - (i + 1)))
+        firstRound.addMatch(m)
     
     private var rounds = Array.ofDim[Round](finalRound + 1)
     rounds(0) = firstRound
     
     private def simulateRound(): Unit =
-        rounds(currentRound) = Round(currentRound)
-        val previousMatches = rounds(currentRound - 1).viewMatches
-        val nbrMatches = (Math.pow(2, finalRound - currentRound)).toInt
+        val round = Round(currentRound)
+        val prevRoundMatches = rounds(currentRound - 1).getMatches
 
-        for i <- 0 until (previousMatches.length - 1) by 2 do
-            rounds(currentRound).addMatch(i, previousMatches(i).winner, previousMatches(i + 1).winner)
+        for i <- 0 until (prevRoundMatches.length - 1) by 2 do
+            val m = Match(i, prevRoundMatches(i).winner, prevRoundMatches(prevRoundMatches.length - i - 1).winner)
+            round.addMatch(m)
 
-        rounds(currentRound).printMatches()
+        round.printMatches()
+        rounds(currentRound) = round
         currentRound += 1
     
     def simulateTournament(): Unit = 
