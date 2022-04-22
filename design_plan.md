@@ -6,6 +6,10 @@
 - Two players
 * Outcome, depending on the players abilities
 
+# Round
+- A collection of matches
+* Methods to view, add and print matches
+
 # Tournament
 * Seeding the players
 - Numbered matches
