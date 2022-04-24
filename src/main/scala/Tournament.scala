@@ -8,7 +8,7 @@ class Tournament(val nbrEntrants: Int):
     private val players: Vector[Player] =
         (for i <- 0 until nbrEntrants yield
             val name = s"${(65+(i / 10)).toChar}${i % 10}"
-            val ability = (Random.nextGaussian()*50).toInt.abs
+            val ability = (Random.nextGaussian()*20 + 50).toInt.abs
 
             Player(name, ability)
         ).sortBy(player => player.ability).reverse.toVector
