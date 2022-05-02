@@ -1,1 +1,1 @@
-final case class Player(name: String, ability: Int)
+final case class Player(name: String, seed: Int)

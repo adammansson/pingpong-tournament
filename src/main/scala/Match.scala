@@ -1,38 +1,26 @@
 final case class Match(nbr: Int):
-  private var players = Array.ofDim[Player](2)
+    private var _players: Vector[Player] = Vector()
+    private var _result: Vector[Int]     = Vector(0, 0)
+    def players                          = _players
+    def result                           = _result
+    def winner =
+        require(_players.length == 2 && _result.exists(_ != 0))
+        _players(_result.indexWhere(_ != 0))
 
-  def assignPlayer(i: Int, player: Player): Unit =
-    players(i) = player
+    def addPlayer(player: Player): Unit =
+        require(_players.length < 2 && _result.forall(_ == 0))
+        _players = _players :+ player
 
-  def emptySlot: Int =
-    if players(0) == null then 0
-    else if players(1) == null then 1
-    else -1
+        if _players.length == 2 then
+            _players(0).seed - _players(1).seed match
+                case x if x < 0 => _result = _result.updated(0, 3)
+                case _          => _result = _result.updated(1, 3)
 
-  private var winner: Option[Player] = None
-  private var loser: Option[Player] = None
-
-  def getWinner: Option[Player] = winner
-  def getLoser: Option[Player] = loser
-
-  def simulateMatch(): Unit =
-    if winner.isDefined || loser.isDefined || players(0) == null || players(1) == null then
-      throw new IllegalArgumentException
-
-    if players(0).ability == players(1).ability then
-        if Math.random >= 0.5 then
-            winner = Some(players(0))
-            loser = Some(players(1))
+    override def toString(): String =
+        if _result == Vector(0, 0) then
+            s"$nbr ${_players.find(p => _players.indexOf(p) == 0).getOrElse("none")} vs ${_players
+                .find(p => _players.indexOf(p) == 1)
+                .getOrElse("none")}"
         else
-            winner = Some(players(1))
-            loser = Some(players(0))
-    else if players(0).ability > players(1).ability then
-        winner = Some(players(0))
-        loser = Some(players(1))
-    else
-        winner = Some(players(1))
-        loser = Some(players(0))
-
-  override def toString(): String =
-    if winner.isEmpty || loser.isEmpty then s"${players(0)} vs ${players(1)}"
-    else s"${winner.get} W vs ${loser.get}"
+            s"$nbr ${_players(0)} ${if _players(0) == winner then "W"
+            else " "} vs ${if _players(1) == winner then "W" else " "} ${_players(1)}"
