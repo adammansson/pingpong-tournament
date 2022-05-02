@@ -1,61 +1,17 @@
 class Tournament(players: Vector[Player]):
-    private val nbrEntrants = players.length
-    private val nbrRounds = (Math.log10(nbrEntrants) / Math.log10(2.0)).toInt
+    private val _nbrRounds =
+        (Math.log10(players.length) / Math.log10(2.0)).toInt
 
-    def simulateTournament(): Unit = 
-        val firstWinnersRound: Round = Round.withPlayers(0, players)
+    private val _rounds = (for i <- 0 until _nbrRounds yield Round(i)).toVector
 
-        val firstLosersRound: Round = Round.withMatches(0, nbrEntrants / 4)
+    def simulateTournament(): Unit =
+        for p <- players do _rounds(0).addPlayer(p)
+        _rounds(0).createMatches()
 
-        val lastWinnersRound: Round = Round.withMatches(nbrRounds, 1)
-        val lastLosersRound: Round = Round.withMatches(nbrRounds, 1)
+        for i <- _rounds.indices.slice(0, _rounds.length - 1) do
+            for p <- _rounds(i).matches.map(_.winner) do
+                _rounds(i + 1).addPlayer(p)
+            _rounds(i + 1).createMatches()
 
-        var winnersRounds: Vector[Round] = 
-            firstWinnersRound +: (for i <- 1 until nbrRounds yield 
-                val round = Round(i)
-                val nbrMatches = (Math.pow(2, nbrRounds - i - 1)).toInt
-                for j <- 0 until nbrMatches do
-                    round.addMatch(Match(j))
-                round
-            ).toVector
-
-        val losersRounds: Vector[Round] =
-            firstLosersRound +: (for i <- 1 until nbrRounds yield
-                val round = Round(i)
-                val nbrMatches = (Math.pow(2, nbrRounds - i - 1)).toInt
-                for j <- 0 until nbrMatches do
-                    round.addMatch(Match(j))
-                round
-            ).toVector :+ lastLosersRound
-        
-        for i <- 0 until winnersRounds.length - 1 do
-            for m <- winnersRounds(i).getMatches do
-                m.simulateMatch()
-                val winnersM: Match = winnersRounds(i + 1).emptySlot 
-                val losersM: Match = losersRounds(i).emptySlot 
-                winnersM.assignPlayer(winnersM.emptySlot, m.getWinner.get)
-                losersM.assignPlayer(losersM.emptySlot, m.getLoser.get)
-
-        for i <- 0 until losersRounds.length - 1 do
-            for m <- losersRounds(i).getMatches do
-                m.simulateMatch()
-                val losersM: Match = losersRounds(i + 1).emptySlot
-                losersM.assignPlayer(losersM.emptySlot, m.getWinner.get)
-
-        val wf = winnersRounds.last.getMatches(0)
-        winnersRounds = winnersRounds :+ lastWinnersRound
-        val gf = winnersRounds.last.getMatches(0)
-        println("Winners final")
-        println(wf)
-        wf.simulateMatch()
-        gf.assignPlayer(0, wf.getWinner.get)
-        println("Losers final")
-        val lf = losersRounds.last.getMatches(0)
-        lf.assignPlayer(1, wf.getLoser.get)
-        println(lf)
-        lf.simulateMatch()
-        gf.assignPlayer(1, lf.getWinner.get)
-
-        println("Grand final")
-        gf.simulateMatch()
-        println(gf)
+        for r <- _rounds do println(r)
+        println(s"\n${_rounds.last.matches(0).winner.name} is the winner!")
