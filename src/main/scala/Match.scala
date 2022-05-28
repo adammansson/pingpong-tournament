@@ -3,6 +3,7 @@ final case class Match(nbr: Int):
     private var _result: Vector[Int]     = Vector(0, 0)
     def players                          = _players
     def result                           = _result
+
     def winner =
         require(_players.length == 2 && _result.exists(_ != 0))
         _players(_result.indexWhere(_ != 0))
@@ -18,9 +19,7 @@ final case class Match(nbr: Int):
 
     override def toString(): String =
         if _result == Vector(0, 0) then
-            s"$nbr ${_players.find(p => _players.indexOf(p) == 0).getOrElse("none")} vs ${_players
-                .find(p => _players.indexOf(p) == 1)
-                .getOrElse("none")}"
+            s"$nbr ${_players.lift(0).getOrElse("none")} vs ${_players.lift(1).getOrElse("none")}"
         else
             s"$nbr ${_players(0)} ${if _players(0) == winner then "W"
             else " "} vs ${if _players(1) == winner then "W" else " "} ${_players(1)}"
